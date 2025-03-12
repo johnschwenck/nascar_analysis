@@ -32,16 +32,37 @@ models:
   neg_binomial: true
   zero_inflated_poisson: true
   zero_inflated_neg_binomial: false
+  xgboost: true  # Explicitly enable xgboost
+  gbm: true      # Explicitly enable gbm
 
 hyperparameters:
   xgboost:
-    - max_depth: [3, 5, 7] 
-    - learning_rate: [0.01, 0.1, 0.3]
-    - n_estimators: [100, 200]
+    enabled: true
+    search_type: randomized  # Switch to RandomizedSearchCV
+    n_iter: 50              # Number of random combinations to try 50 x 5 = 250 fits
+    param_grid:
+      max_depth: [3, 5, 7]
+      learning_rate: [0.01, 0.1, 0.3]
+      n_estimators: [50, 100, 200]
+      min_child_weight: [1, 3]
+      subsample: [0.8, 1.0]
+      colsample_bytree: [0.8, 1.0]
+    early_stopping_rounds: 10  # Enable early stopping
+    cv_folds: 5
+    n_jobs: 2  # Limit to 2 cores to avoid overload
   gbm:
-    - max_depth: [3, 5]
-    - learning_rate: [0.01, 0.1]
-    - n_estimators: [100, 200]
+    enabled: true
+    search_type: randomized
+    n_iter: 50
+    param_grid:
+      max_depth: [3, 5, 7]
+      learning_rate: [0.01, 0.1, 0.3]
+      n_estimators: [50, 100, 200]
+      min_samples_split: [2, 5]
+      min_samples_leaf: [1, 2]
+    early_stopping_rounds: 10
+    cv_folds: 5
+    n_jobs: 2
 
 model_selection:
   # manual_model_id: gbm_20250311_2138  # e.g., ols_20240315_143500 if manually selecting else null
@@ -53,16 +74,9 @@ model_selection:
 output:
   save_models: true
   leaderboard_csv: leaderboard.csv
-
-  # driver_over_under_performance_csv: "outputs/over_under_performance.csv"
-  # driver_championship_comparison_csv: "outputs/driver_championship_comparison.csv"
   OU_sort_column: win_diff
   driver_sort_ascending: False
 
-  # team_over_under_performance_csv: "outputs/team_over_under_performance.csv"
-  # team_championship_comparison_csv: "outputs/team_championship_comparison.csv"
-  # team_sort_column: win_diff
-  # team_sort_ascending: False
-
-  # plot_dir: "outputs/plots"
-  # win_dist_csv: "outputs/win_distributions_original_train_test.csv"
+visualization:
+  default_display: true   # Master switch - if False, PDPs are skipped
+  pdp_features: null        # if empty, defaults to PDPs for top 10 features

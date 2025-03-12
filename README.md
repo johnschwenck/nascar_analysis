@@ -89,7 +89,7 @@ The results dataset consists of rows of data that represent a race finishing res
 ## CODE DOCUMNETATION
 
 Used Acronyms:
-Joe Gibbs Racing (JGR)	
-Hendrick Motorsports (HMS)	
-Stewart-Haas Racing (SHR)	
-Furniture Row Racing (FRR)
+- Joe Gibbs Racing (JGR)	
+- Hendrick Motorsports (HMS)	
+- Stewart-Haas Racing (SHR)	
+- Furniture Row Racing (FRR)

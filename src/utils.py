@@ -7,16 +7,21 @@ import pandas as pd
 import numpy as np
 import yaml
 import joblib
+
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.model_selection import RandomizedSearchCV, GridSearchCV, train_test_split
+from sklearn.linear_model import LinearRegression, PoissonRegressor, Ridge
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.model_selection import GridSearchCV, cross_val_score, KFold
+
 import statsmodels.api as sm
-from sklearn.linear_model import LinearRegression, PoissonRegressor
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 from statsmodels.discrete.discrete_model import NegativeBinomial
 from statsmodels.discrete.count_model import ZeroInflatedPoisson, ZeroInflatedNegativeBinomialP
-from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.model_selection import GridSearchCV, cross_val_score, KFold
+
 import xgboost as xgb
+from xgboost import XGBRegressor
 
 # from logger_config import setup_logger
 
@@ -196,7 +201,7 @@ def fit_and_evaluate_single_model(model_type, data_parts, cv_folds, config, rand
             model, y_train_pred, y_test_pred = fit_ml_model(
                 xgb.XGBRegressor(objective='reg:squarederror', random_state=random_seed),
                 X_train, X_test, y_train, y_test,
-                config['hyperparameters']['xgboost'],
+                config['hyperparameters']['xgboost']['param_grid'],
                 model_type,
                 logger = logger
             )
@@ -205,7 +210,7 @@ def fit_and_evaluate_single_model(model_type, data_parts, cv_folds, config, rand
             model, y_train_pred, y_test_pred = fit_ml_model(
                 GradientBoostingRegressor(random_state=random_seed),
                 X_train, X_test, y_train, y_test,
-                config['hyperparameters']['gbm'],
+                config['hyperparameters']['gbm']['param_grid'],
                 model_type,
                 logger=logger
             )
@@ -227,6 +232,185 @@ def fit_and_evaluate_single_model(model_type, data_parts, cv_folds, config, rand
 
         return metrics, model
 
+# def fit_and_evaluate_single_model(model_type, data_parts, cv_folds, config, random_seed, logger):
+#     # Load hyperparameter settings from config
+#     hp_config = config.get('hyperparameters', {}).get(model_type, {})
+#     search_type = hp_config.get('search_type', 'grid')
+#     n_iter = hp_config.get('n_iter', 50) if search_type == 'randomized' else None
+#     param_grid = hp_config.get('param_dist', hp_config.get('param_grid', {}))
+#     early_stopping_rounds = hp_config.get('early_stopping_rounds', None)
+#     n_jobs = hp_config.get('n_jobs', 2)
+
+#     # Unpack data_parts based on model type
+#     is_zero_inflated = model_type in ['zero_inflated_poisson', 'zero_inflated_neg_binomial', 'zip', 'zinb']
+#     if is_zero_inflated:
+#         if len(data_parts) != 10:
+#             raise ValueError(f"Expected 10 data parts for {model_type}, got {len(data_parts)}")
+#         X_count_train, X_count_test, X_count_train_const, X_count_test_const, \
+#         X_inflate_train, X_inflate_test, X_inflate_train_const, X_inflate_test_const, y_train, y_test = data_parts
+#     else:
+#         if len(data_parts) != 6:
+#             raise ValueError(f"Expected 6 data parts for {model_type}, got {len(data_parts)}")
+#         X_train, X_test, X_train_const, X_test_const, y_train, y_test = data_parts
+
+#     # Convert to DataFrames if needed (assuming NumPy arrays from data_partitioning)
+#     all_columns = list(config['predictors']['all_predictors'])
+#     if is_zero_inflated:
+#         count_indices = [all_columns.index(col) for col in config['predictors']['count_predictors'] if col in all_columns]
+#         inflation_indices = [all_columns.index(col) for col in config['predictors']['inflation_predictors'] if col in all_columns]
+#         X_count_train_df = pd.DataFrame(X_count_train[:, count_indices], columns=config['predictors']['count_predictors'])
+#         X_inflate_train_df = pd.DataFrame(X_inflate_train[:, inflation_indices], columns=config['predictors']['inflation_predictors'])
+#         X_count_test_df = pd.DataFrame(X_count_test[:, count_indices], columns=config['predictors']['count_predictors'])
+#         X_inflate_test_df = pd.DataFrame(X_inflate_test[:, inflation_indices], columns=config['predictors']['inflation_predictors'])
+#     else:
+#         indices = [all_columns.index(col) for col in config['predictors']['all_predictors'] if col in all_columns]
+#         X_train_df = pd.DataFrame(X_train[:, indices], columns=config['predictors']['all_predictors'])
+#         X_test_df = pd.DataFrame(X_test[:, indices], columns=config['predictors']['all_predictors'])
+
+#     # Define model
+#     if model_type == 'ols':
+#         model = Ridge(random_state=random_seed)
+#     elif model_type == 'poisson':
+#         model = PoissonRegressor()
+#     elif model_type == 'negbin' or model_type == 'neg_binomial':
+#         model = NegativeBinomial(y_train, X_train_const)  # Use constants for statsmodels
+#     elif model_type == 'zero_inflated_poisson' or model_type == 'zip':
+#         model = ZeroInflatedPoisson(y_train, X_count_train_const, exog_infl=X_inflate_train_const)
+#     elif model_type == 'xgboost':
+#         model = XGBRegressor(random_state=random_seed)
+#     elif model_type == 'gbm':
+#         model = GradientBoostingRegressor(random_state=random_seed)
+#     else:
+#         raise ValueError(f"Unsupported model type: {model_type}")
+
+#     # Perform hyperparameter search
+#     if param_grid and model_type in ['ols', 'poisson', 'xgboost', 'gbm']:
+#         if search_type == 'randomized':
+#             logger.info(f"Running RandomizedSearchCV for {model_type} with param_dist: {param_grid}")
+#             search = RandomizedSearchCV(
+#                 estimator=model,
+#                 param_distributions=param_grid,
+#                 n_iter=n_iter,
+#                 cv=cv_folds,
+#                 n_jobs=n_jobs,
+#                 scoring='neg_mean_squared_error',
+#                 random_state=random_seed,
+#                 verbose=1
+#             )
+#         else:
+#             logger.info(f"Running GridSearchCV for {model_type} with param_grid: {param_grid}")
+#             search = GridSearchCV(
+#                 estimator=model,
+#                 param_grid=param_grid,
+#                 cv=cv_folds,
+#                 n_jobs=n_jobs,
+#                 scoring='neg_mean_squared_error',
+#                 verbose=1
+#             )
+
+#         # Fit with early stopping if specified
+#         if early_stopping_rounds and model_type in ['xgboost', 'gbm']:
+#             X_train_split, X_val, y_train_split, y_val = train_test_split(
+#                 X_train_df if is_zero_inflated else X_train, y_train, test_size=0.2, random_state=random_seed
+#             )
+#             search.fit(
+#                 X_train_split, y_train_split,
+#                 eval_set=[(X_val, y_val)],
+#                 early_stopping_rounds=early_stopping_rounds,
+#                 verbose=False
+#             )
+#         else:
+#             search.fit(X_train_df if is_zero_inflated else X_train, y_train)
+
+#         best_model = search.best_estimator_
+#         best_params = search.best_params_
+#         logger.info(f"Best parameters for {model_type}: {best_params}")
+#     elif model_type in ['negbin', 'zero_inflated_poisson', 'neg_binomial', 'zip'] and param_grid:
+#         # Manual grid search for statsmodels models
+#         best_score = float('inf')
+#         best_model = None
+#         best_params = None
+
+#         from itertools import product
+#         param_combinations = list(product(*[v for k, v in param_grid.items()]))
+#         param_names = list(param_grid.keys())
+
+#         for params in param_combinations:
+#             param_dict = dict(zip(param_names, params))
+#             logger.info(f"Testing parameters for {model_type}: {param_dict}")
+
+#             if model_type in ['negbin', 'neg_binomial']:
+#                 model_instance = NegativeBinomial(y_train, X_train_const).fit_regularized(
+#                     method='elastic_net',
+#                     alpha=param_dict.get('alpha', 0.1),
+#                     l1_ratio=param_dict.get('l1_ratio', 0.5),
+#                     disp=False
+#                 )
+#             elif model_type in ['zero_inflated_poisson', 'zip']:
+#                 model_instance = ZeroInflatedPoisson(y_train, X_count_train_const, exog_infl=X_inflate_train_const).fit_regularized(
+#                     method='elastic_net',
+#                     l1_ratio=param_dict.get('l1_ratio', 0.5),
+#                     disp=False
+#                 )
+
+#             # Manual cross-validation
+#             from sklearn.model_selection import KFold
+#             kf = KFold(n_splits=cv_folds, shuffle=True, random_state=random_seed)
+#             scores = []
+#             for train_idx, val_idx in kf.split(X_train_df if is_zero_inflated else X_train):
+#                 if model_type in ['zero_inflated_poisson', 'zip']:
+#                     X_count_train_cv = X_count_train_const[train_idx]
+#                     X_inflation_train_cv = X_inflate_train_const[train_idx]
+#                     y_train_cv = y_train.iloc[train_idx]
+#                     X_count_val_cv = X_count_train_const[val_idx]
+#                     X_inflation_val_cv = X_inflate_train_const[val_idx]
+#                     y_val_cv = y_train.iloc[val_idx]
+#                     y_pred_cv = model_instance.predict(X_count_val_cv, exog_infl=X_inflation_val_cv)
+#                 else:
+#                     X_train_cv = X_train_const[train_idx] if not is_zero_inflated else X_train_df.iloc[train_idx]
+#                     y_train_cv = y_train.iloc[train_idx]
+#                     X_val_cv = X_train_const[val_idx] if not is_zero_inflated else X_train_df.iloc[val_idx]
+#                     y_val_cv = y_train.iloc[val_idx]
+#                     y_pred_cv = model_instance.predict(X_val_cv)
+
+#                 score = mean_squared_error(y_val_cv, y_pred_cv, squared=False)
+#                 scores.append(score)
+
+#             avg_score = np.mean(scores)
+#             if avg_score < best_score:
+#                 best_score = avg_score
+#                 best_model = model_instance
+#                 best_params = param_dict
+
+#         logger.info(f"Best parameters for {model_type}: {best_params}")
+#     else:
+#         # Fit without grid search
+#         if model_type in ['negbin', 'neg_binomial']:
+#             best_model = NegativeBinomial(y_train, X_train_const).fit(disp=False)
+#         elif model_type in ['zero_inflated_poisson', 'zip']:
+#             best_model = ZeroInflatedPoisson(y_train, X_count_train_const, exog_infl=X_inflate_train_const).fit(disp=False)
+#         else:
+#             best_model = model.fit(X_train_df if is_zero_inflated else X_train, y_train)
+#         best_params = {}
+
+#     # Evaluate model
+#     if model_type in ['zero_inflated_poisson', 'zip']:
+#         y_pred = best_model.predict(X_count_test_const, exog_infl=X_inflate_test_const)
+#         y_train_pred = best_model.predict(X_count_train_const, exog_infl=X_inflate_train_const)
+#     else:
+#         y_pred = best_model.predict(X_test_const if model_type in ['ols', 'poisson', 'negbin', 'neg_binomial'] else X_test_df)
+#         y_train_pred = best_model.predict(X_train_const if model_type in ['ols', 'poisson', 'negbin', 'neg_binomial'] else X_train_df)
+
+#     metrics = {
+#         'train_RMSE': mean_squared_error(y_train, y_train_pred, squared=False),
+#         'test_RMSE': mean_squared_error(y_test, y_pred, squared=False),
+#         'train_MAE': mean_absolute_error(y_train, y_train_pred),
+#         'test_MAE': mean_absolute_error(y_test, y_pred),
+#         'train_R2': r2_score(y_train, y_train_pred),
+#         'test_R2': r2_score(y_test, y_pred)
+#     }
+
+#     return metrics, best_model
 
 def fit_ml_model(base_model, X_train, X_test, y_train, y_test, param_grid, model_type, logger=None):
     """

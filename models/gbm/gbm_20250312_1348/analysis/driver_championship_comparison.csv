@@ -1,0 +1,12 @@
+race_season,expected_champion_driver,expected_wins,actual_champion,match
+2014,Kevin Harvick,5.140078621945481,Kevin Harvick,True
+2015,Joey Logano,5.864426852143458,Kyle Busch,False
+2016,Martin Truex Jr,4.726416180953325,Jimmie Johnson,False
+2017,Martin Truex Jr,7.683607237063325,Martin Truex Jr,True
+2018,Kevin Harvick,7.627398720544753,Joey Logano,False
+2019,Martin Truex Jr,6.88100173605352,Kyle Busch,False
+2020,Denny Hamlin,6.0167031998493234,Chase Elliott,False
+2021,Kyle Larson,5.922499334448169,Kyle Larson,True
+2022,Chase Elliott,4.305775156043835,Joey Logano,False
+2023,William Byron,3.9055620131961613,Ryan Blaney,False
+2024,Kyle Larson,5.654079735252873,Joey Logano,False

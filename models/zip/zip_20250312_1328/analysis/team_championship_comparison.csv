@@ -1,0 +1,12 @@
+race_season,expected_champion_team,expected_wins,actual_champion_team,match
+2014,Team Penske,6.044518094461259,Stewart-Haas Racing,False
+2015,Stewart-Haas Racing,11.933668990764003,Joe Gibbs Racing,False
+2016,Joe Gibbs Racing,7.7973006328598125,Hendrick Motorsports,False
+2017,Furniture Row Racing,9.57324396571548,Furniture Row Racing,True
+2018,Stewart-Haas Racing,12.965750531413455,Team Penske,False
+2019,Joe Gibbs Racing,15.801049175791386,Joe Gibbs Racing,True
+2020,Joe Gibbs Racing,7.971094402181172,Hendrick Motorsports,False
+2021,Hendrick Motorsports,19.493192407018334,Hendrick Motorsports,True
+2022,Hendrick Motorsports,5.624458536654946,Team Penske,False
+2023,Hendrick Motorsports,6.314408590712615,Team Penske,False
+2024,Hendrick Motorsports,7.339166557719137,Team Penske,False
