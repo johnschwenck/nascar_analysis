@@ -27,13 +27,13 @@ cross_validation:
   folds: 5  # Enables 5-fold CV; set to null or omit to disable
 
 models:
-  ols: true
-  poisson: true
-  neg_binomial: true
-  zero_inflated_poisson: true
+  ols: false
+  poisson: false
+  neg_binomial: false
+  zero_inflated_poisson: false
   zero_inflated_neg_binomial: false
   xgboost: true  # Explicitly enable xgboost
-  gbm: true      # Explicitly enable gbm
+  gbm: false      # Explicitly enable gbm
 
 hyperparameters:
   xgboost:
@@ -66,8 +66,8 @@ hyperparameters:
 
 model_selection:
   # manual_model_id: gbm_20250311_2138  # e.g., ols_20240315_143500 if manually selecting else null
-  # manual_model_id: negbin_20250312_0752
-  manual_model_id: null
+  manual_model_id: zip_20250312_1409
+  # manual_model_id: null
   metric: test_RMSE
   minimize: true
 

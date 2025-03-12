@@ -57,29 +57,29 @@ from datetime import datetime
 from sklearn.model_selection import train_test_split, cross_val_score, KFold, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-from sklearn.model_selection import GridSearchCV
-from sklearn.linear_model import LinearRegression, PoissonRegressor
+# from sklearn.model_selection import GridSearchCV
+# from sklearn.linear_model import LinearRegression, PoissonRegressor
 from statsmodels.stats.outliers_influence import variance_inflation_factor
-from statsmodels.discrete.discrete_model import NegativeBinomial
-from statsmodels.discrete.count_model import ZeroInflatedPoisson, ZeroInflatedNegativeBinomialP
-from sklearn.ensemble import GradientBoostingRegressor
+# from statsmodels.discrete.discrete_model import NegativeBinomial
+# from statsmodels.discrete.count_model import ZeroInflatedPoisson, ZeroInflatedNegativeBinomialP
+# from sklearn.ensemble import GradientBoostingRegressor
 import xgboost as xgb
 import statsmodels.api as sm
 
 import matplotlib
 matplotlib.use('Agg')  # Use the Agg backend for non-interactive plotting
 
-from championship_evaluator import ChampionshipEvaluator
-from utils import (load_config, load_data, prepare_features, 
+from src.championship_evaluator import ChampionshipEvaluator
+from src.utils import (load_config, load_data, prepare_features, 
                   scale_and_add_constant, get_enabled_model_types, load_model,
                   fit_and_evaluate_single_model, save_model, save_performance_metrics,
-                  update_readme_leaderboard) # compute_metrics in utils
+                  update_readme_leaderboard, create_log_header) # compute_metrics in utils
 
 # Run PDP helper - automatically detects model type
-from visualization import PDP_wrapper
-import visualization as viz
+from src.visualization import PDP_wrapper
+import src.visualization as viz
 
-from logger_config import setup_logger
+from src.logger_config import setup_logger
 # logger = setup_logger(__name__)
 
 
@@ -129,6 +129,8 @@ class RacingMLPipeline:
             pd.DataFrame: Processed dataset with aggregated features per driver per season.
         """
         self.logger.info("\n\tDATA PREPROCESSING AND AGGREGATION\n")
+        # header = create_log_header(f"DATA PROCESSING & AGGREGATION", width=50)
+        # self.logger.info(f"\n\n{header}\n")
 
         # Aggregate relevant performance metrics for each driver-season
         metrics_df = df.groupby(['race_season', 'driver_id', 'driver_fullname']).agg(
@@ -195,6 +197,8 @@ class RacingMLPipeline:
             dict: Selected predictors split into count and inflation models (for ZIP), plus all predictors.
         """
         self.logger.info('\n\n\tFEATURE SELECTION\n')
+        # header = create_log_header(f"FEATURE SELECTION", width=50)
+        # self.logger.info(f"\n\n{header}\n")
 
         # Step 1: Identify target variable
         target = target or self.config.get('target_variable', 'wins')
@@ -357,7 +361,7 @@ class RacingMLPipeline:
                 X_count_train, X_count_test, X_count_train_const, X_count_test_const,
                 X_inflate_train, X_inflate_test, X_inflate_train_const, X_inflate_test_const,
                 y_train, y_test
-            )
+            ), predictors
 
         else:
             X_train, X_test, y_train, y_test = train_test_split(
@@ -368,7 +372,11 @@ class RacingMLPipeline:
             )
             X_train_const, X_test_const = scale_and_add_constant(X_train, X_test, self.scaler)
 
-            return X_train, X_test, X_train_const, X_test_const, y_train, y_test
+            # return X_train, X_test, X_train_const, X_test_const, y_train, y_test
+            data_parts = (X_train, X_test, X_train_const, X_test_const, y_train, y_test)
+
+            return data_parts, predictors
+
         
     
     # ============================================
@@ -404,7 +412,9 @@ class RacingMLPipeline:
 
         # Iterate over each model type
         for model_type in model_types:
-            self.logger.info(f"\n\n\t\t+------- Processing model: {model_type} -------+\n")
+            # self.logger.info(f"\n\n\t\t+------- Processing model: {model_type} -------+\n")
+            header = create_log_header(f"PROCESSING MODEL: {model_type.upper()}", width=50)
+            self.logger.info(f"\n\n{header}\n")
 
             # Add model_id (model_type + timestamp)
             timestamp = datetime.now().strftime('%Y%m%d_%H%M')
@@ -427,8 +437,10 @@ class RacingMLPipeline:
             # self.logger.info(f"Saved processed metrics to {metrics_df_path}")
 
             # Partition data and get predictors
-            data_parts = self.data_partitioning(df, model_type)
-            predictors = self.select_predictors(df, model_type)  # Get predictors for PDP
+            # data_parts = self.data_partitioning(df, model_type)
+            # predictors = self.select_predictors(df, model_type)  # Get predictors for PDP
+            data_parts, predictors = self.data_partitioning(df, model_type)
+
 
             # # Determine if this is a zero-inflated model based on predictors
             # is_zero_inflated = 'inflation_predictors' in predictors and predictors['inflation_predictors']
@@ -547,7 +559,7 @@ class RacingMLPipeline:
                 self.logger.info("PDP generation disabled in config. Skipping PDP plots.")
 
             ## Championship Evaluation
-            model_results = self.generate_predictions(df, model = model, model_id = self.model_id, model_type = model_type)
+            model_results = self.generate_predictions(df, model = model, model_id = self.model_id, model_type = model_type, predictors=predictors)
 
             # 4.1(F). Championship Evaluation for manual model
             # from championship_evaluator import ChampionshipEvaluator
@@ -640,10 +652,10 @@ class RacingMLPipeline:
     #            PREDICTIONS
     # ============================================
    
-    def _predict_expected_wins(self, model, model_type, metrics_df):
+    def _predict_expected_wins(self, model, model_type, metrics_df, predictors):
 
         is_zip_model = model_type in ['zip', 'zinb']
-        predictors = self.select_predictors(metrics_df, model_type)
+        # predictors = self.select_predictors(metrics_df, model_type)
 
         if is_zip_model:
             X_count, X_inflate = prepare_features(
@@ -688,7 +700,7 @@ class RacingMLPipeline:
 
         return results_df
 
-    def generate_predictions(self, metrics_df, model=None, model_id=None, model_type=None, manual=False):
+    def generate_predictions(self, metrics_df, predictors, model=None, model_id=None, model_type=None, manual=False):
         """
         Generates predictions from a specified or top model.
         
@@ -715,7 +727,7 @@ class RacingMLPipeline:
             model_type = model_type or self.model_type
 
         # Run the prediction
-        results_df = self._predict_expected_wins(model, model_type, metrics_df)
+        results_df = self._predict_expected_wins(model, model_type, metrics_df, predictors)
 
         # Log depending on whether it's manual or top model
         if manual:
@@ -788,11 +800,14 @@ class RacingMLPipeline:
             self.logger.info('Driver-Aggregated Data (first 5 rows):')
             self.logger.info(metrics_df.head().to_string(index=False))
 
+            # Generate predictors from the processed metrics_df.
+            predictors = self.select_predictors(metrics_df, self.model_type)
+
             # 4.1(E). Run predictions with the loaded model
-            manual_model_results = self.generate_predictions(metrics_df, model)
+            manual_model_results = self.generate_predictions(metrics_df, predictors=predictors, model=model)
 
             # 4.1(F). Championship Evaluation for manual model
-            from championship_evaluator import ChampionshipEvaluator
+            from src.championship_evaluator import ChampionshipEvaluator
             evaluator = ChampionshipEvaluator(self.config, logger=self.logger)
             
             driver_comparison_df = evaluator.evaluate_championship_predictions(
@@ -874,11 +889,11 @@ class RacingMLPipeline:
 
             # self.logger.info("Championship evaluations completed for all fitted models.")
 
-            update_readme_leaderboard(
-                leaderboard_path=os.path.join('models', self.config['output']['leaderboard_csv']),
-                readme_path='README.md',
-                logger=self.logger
-            )
+        update_readme_leaderboard(
+            leaderboard_path=os.path.join('models', self.config['output']['leaderboard_csv']),
+            readme_path='README.md',
+            logger=self.logger
+        )
 
 
 if __name__ == "__main__":

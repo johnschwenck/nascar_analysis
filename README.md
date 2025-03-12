@@ -1,3 +1,5 @@
+# NASCAR ML Pipeline Documentation
+This document outlines the workflow for a machine learning pipeline designed to analyze NASCAR race results from 2014 to 2024. The pipeline predicts driver performance, specifically focusing on expected wins and evaluating over/under-performance relative to actual results.
 ```
 # ===============================
 # NASCAR Race Results ML Pipeline
@@ -94,18 +96,21 @@ Used Acronyms:
 - Stewart-Haas Racing (SHR)	
 - Furniture Row Racing (FRR)
 
+*Main Workflow*
+(1)
 
 ## Current Model Leaderboard
 
 <!-- LEADERBOARD_START -->
 
-**Leaderboard (Top 8 Models)**  
-_Last updated: 2025-03-12 14:10:04_
+**Leaderboard (Top 9 Models)**  
+_Last updated: 2025-03-12 17:52:25_
 
 | model_id              | model_type   |     timestamp |   train_RMSE |   test_RMSE |   train_MAE |   test_MAE |   train_R2 |   test_R2 |   CV_RMSE_Mean |   CV_RMSE_Std |   train_test_diff |
 |:----------------------|:-------------|--------------:|-------------:|------------:|------------:|-----------:|-----------:|----------:|---------------:|--------------:|------------------:|
 | gbm_20250312_1325     | gbm          | 20250312_1325 |     0.233236 |    0.757774 |    0.116723 |   0.372363 |   0.967888 |  0.733576 |       0.736935 |      0.042956 |         -0.524538 |
-| gbm_20250312_1409     | gbm          | 20250312_1409 |     0.324494 |    0.774453 |    0.161079 |   0.382465 |   0.937844 |  0.721719 |       0.743694 |      0.042283 |         -0.449959 |
+| gbm_20250312_1740     | gbm          | 20250312_1740 |     0.324494 |    0.774453 |    0.161079 |   0.382465 |   0.937844 |  0.721719 |       0.743694 |      0.042283 |         -0.449959 |
+| xgboost_20250312_1740 | xgboost      | 20250312_1740 |     0.30222  |    0.781252 |    0.141786 |   0.360431 |   0.946084 |  0.716811 |       0.661109 |      0.051914 |         -0.479032 |
 | xgboost_20250312_1325 | xgboost      | 20250312_1325 |     0.007882 |    0.797033 |    0.004325 |   0.399319 |   0.999963 |  0.705255 |       0.765778 |      0.075304 |         -0.789151 |
 | ols_20250312_1409     | ols          | 20250312_1409 |     0.621204 |    0.80262  |    0.301909 |   0.400279 |   0.772208 |  0.701109 |       0.693959 |      0.105832 |         -0.181416 |
 | xgboost_20250312_1409 | xgboost      | 20250312_1409 |     0.045033 |    0.829678 |    0.02348  |   0.41044  |   0.998803 |  0.680616 |       0.691927 |      0.03426  |         -0.784645 |
@@ -114,3 +119,105 @@ _Last updated: 2025-03-12 14:10:04_
 | negbin_20250312_1409  | negbin       | 20250312_1409 |     1.22236  |    1.88578  |    0.380379 |   0.51644  |   0.118005 | -0.649968 |       0.693959 |      0.105832 |         -0.663422 |
 
 <!-- LEADERBOARD_END -->
+
+
+### Pipeline Workflow
+
+#### Step 1: Data Configuration
+Configure the pipeline using `config.yaml`, specifying model settings, predictor inclusion/exclusion, and hyperparameter tuning.
+
+Example `config.yaml` snippet:
+```yaml
+random_seed: 42
+data_path: data/cup_race_results_2014_2024.csv
+champions_path: data/champions_2014_2024.csv
+
+target_variable: wins
+train_test_split:
+  test_size: 0.3
+  stratify: race_season
+
+models:
+  xgboost: true
+  gbm: true
+```
+
+### Step 2: Data Preprocessing
+Data is aggregated at the driver-level by season, creating derived metrics (wins, top finishes, laps led percentages, etc.).
+
+### Main Workflow Steps
+1. **Data Loading and Preprocessing**
+2. **Predictor Selection**
+3. **Train-Test Split** (stratified by season)
+4. **Model Training and Evaluation** (OLS, Poisson, ZIP, NB, XGBoost, GBM)
+5. **Performance Evaluation** (RMSE, MAE, R²)
+6. **Hyperparameter Tuning** (Randomized Search)
+5. **Model Selection and Leaderboard**
+6. **Visualization and Reporting**
+
+### Example Usage
+```python
+from src.main import RacingMLPipeline
+
+pipeline = RacingMLPipeline('config.yaml')
+df = pipeline.preprocess_data()
+pipeline.fit_models(df)
+```
+
+### Predicting Driver Performance
+
+Models predict the expected number of wins. This can be used to identify which drivers outperformed or underperformed expectations:
+
+```python
+from src.utils import load_model
+from src.visualization import plot_over_under_performance
+
+model = load_model('xgboost_20250312_1740')
+predictions = model.predict(X_test)
+
+plot_over_under_performance(df, predictions, 'models/xgboost/plots')
+```
+
+### Evaluating Championship Predictions
+
+The pipeline evaluates how often the best team or driver (entity) wins the championship:
+
+```python
+from src.championship_evaluator import ChampionshipEvaluator
+
+evaluator = ChampionshipEvaluator(config)
+championship_df = evaluator.evaluate_championship_predictions(df, predictions, entity='driver')
+```
+
+### Visualization Tools
+
+- Feature distributions
+- Correlation heatmaps
+- Feature importance
+- Residual analysis
+- Partial Dependence Plots (PDP)
+
+```python
+from src.visualization import plot_feature_importance
+
+plot_feature_importance(model, df.columns, save_path='models/xgboost/xgboost_20250312_1740/plots')
+```
+
+### Logging
+
+The pipeline uses a configurable logging system:
+
+```python
+from src.logger_config import setup_logger
+logger = setup_logger(__name__)
+logger.info("Pipeline execution started.")
+```
+
+### Dependencies
+Ensure all dependencies are installed:
+```bash
+pip install -r requirements.txt
+```
+
+---
+
