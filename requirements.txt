@@ -1,0 +1,20 @@
+# Core dependencies
+numpy==1.24.2
+pandas==1.5.3
+scikit-learn==1.2.2
+statsmodels==0.13.5
+
+# Visualization
+matplotlib==3.7.1
+seaborn==0.12.2
+plotly==5.14.1
+
+# YAML parsing
+PyYAML==6.0
+
+# Web scraping (optional for champion_scraper.py)
+requests==2.28.2
+beautifulsoup4==4.11.1
+
+# Optional interactive visualization/reporting
+jupyterlab==3.6.1

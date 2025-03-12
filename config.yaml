@@ -1,0 +1,68 @@
+random_seed: 42
+data_path: data/cup_race_results_2014_2024.csv
+champions_path: data/champions_2014_2024.csv
+
+generate_grouped_data: False
+
+target_variable: wins
+predictors:
+  force_categorical:
+    - race_season
+  include: []  # Empty: uses automatic predictor selection
+  exclude: # if empty: no manual exclusions (automatic exclusions still apply)
+    - avg_diff_time_sec
+    - avg_diff_time_min
+    - total_laps
+    - avg_starting_position
+    - top_5
+    - top_10
+    - total_laps_led  
+    - num_races
+
+train_test_split:
+  test_size: 0.3
+  stratify: race_season  # Stratifies by race_season - ensures relatively similar distribution among train & test
+
+cross_validation:
+  folds: 5  # Enables 5-fold CV; set to null or omit to disable
+
+models:
+  ols: true
+  poisson: true
+  neg_binomial: true
+  zero_inflated_poisson: true
+  zero_inflated_neg_binomial: false
+
+hyperparameters:
+  xgboost:
+    - max_depth: [3, 5, 7] 
+    - learning_rate: [0.01, 0.1, 0.3]
+    - n_estimators: [100, 200]
+  gbm:
+    - max_depth: [3, 5]
+    - learning_rate: [0.01, 0.1]
+    - n_estimators: [100, 200]
+
+model_selection:
+  # manual_model_id: gbm_20250311_2138  # e.g., ols_20240315_143500 if manually selecting else null
+  # manual_model_id: negbin_20250312_0752
+  manual_model_id: null
+  metric: test_RMSE
+  minimize: true
+
+output:
+  save_models: true
+  leaderboard_csv: leaderboard.csv
+
+  # driver_over_under_performance_csv: "outputs/over_under_performance.csv"
+  # driver_championship_comparison_csv: "outputs/driver_championship_comparison.csv"
+  OU_sort_column: win_diff
+  driver_sort_ascending: False
+
+  # team_over_under_performance_csv: "outputs/team_over_under_performance.csv"
+  # team_championship_comparison_csv: "outputs/team_championship_comparison.csv"
+  # team_sort_column: win_diff
+  # team_sort_ascending: False
+
+  # plot_dir: "outputs/plots"
+  # win_dist_csv: "outputs/win_distributions_original_train_test.csv"
