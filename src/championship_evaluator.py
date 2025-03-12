@@ -151,7 +151,7 @@ class ChampionshipEvaluator:
             f"{entity}_over_under_performance.csv"
         )
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
-        agg_df.sort_values(by=['race_season', 'actual_wins']).to_csv(output_file, index=False)
+        agg_df.sort_values(by=['race_season', 'actual_wins'], ascending = False).to_csv(output_file, index=False)
         self.logger.info(f"Saved {entity}-level over/under-performance report to: {output_file}")
 
         # Find statistical champion (highest expected wins)
@@ -301,7 +301,7 @@ class ChampionshipEvaluator:
             'outputs/team_over_under_performance.csv'
         )
         os.makedirs(os.path.dirname(team_over_under_output), exist_ok=True)
-        team_agg_df.sort_values(by=['race_season', 'actual_wins']).to_csv(team_over_under_output, index=False)
+        team_agg_df.sort_values(by=['race_season', 'actual_wins'], ascending = False).to_csv(team_over_under_output, index=False)
         self.logger.info(f"Team Over/Under performance report saved to {team_over_under_output}")
 
         # Find the "statistical champion team" (team with highest expected wins) per season
