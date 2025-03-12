@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import yaml
 import joblib
+from datetime import datetime
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
@@ -554,3 +555,91 @@ def save_performance_metrics(metrics_list, config, rd_thresh = 6, logger = None)
     logger.info(f"\nLeaderboard metrics saved to {leaderboard_file}\n")
 
     return sorted_by_rmse_and_diff
+
+def update_readme_leaderboard(leaderboard_path='models/leaderboard.csv', 
+                               readme_path='README.md',
+                               logger=None):
+    """
+    Updates the README.md file with the current leaderboard in Markdown table format.
+    
+    Args:
+        leaderboard_path (str): Path to the leaderboard CSV file.
+        readme_path (str): Path to the README.md file.
+        top_n (int): Number of leaderboard entries to include.
+        logger (logging.Logger): Optional logger for logging updates.
+        
+    Returns:
+        None
+    """
+    
+    try:
+        # Load leaderboard CSV
+        df = pd.read_csv(leaderboard_path)
+
+        if df.empty:
+            msg = f"Leaderboard CSV at {leaderboard_path} is empty. Nothing to update in README."
+            if logger:
+                logger.warning(msg)
+            else:
+                print(msg)
+            return
+
+        # Top N
+        top_n = len(df)
+
+        # Sort and select top N models (by test_RMSE as an example)
+        df_sorted = df.sort_values(by='test_RMSE').head(top_n).reset_index(drop=True)
+
+        # Convert to Markdown table format
+        markdown_table = df_sorted.to_markdown(index=False)
+
+        # Generate timestamp
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        # Read existing README content
+        with open(readme_path, 'r', encoding='utf-8') as f:
+            readme_contents = f.read()
+
+        # Define markers where to inject leaderboard table
+        marker_start = '<!-- LEADERBOARD_START -->'
+        marker_end = '<!-- LEADERBOARD_END -->'
+
+        # Create the new leaderboard section with timestamp
+        new_leaderboard_section = (
+            f"{marker_start}\n\n"
+            f"**Leaderboard (Top {top_n} Models)**  \n"
+            f"_Last updated: {current_time}_\n\n"
+            f"{markdown_table}\n\n"
+            f"{marker_end}"
+        )
+
+        # Check for existing markers in README
+        if marker_start in readme_contents and marker_end in readme_contents:
+            # Replace existing leaderboard block
+            before = readme_contents.split(marker_start)[0]
+            after = readme_contents.split(marker_end)[1]
+            updated_readme = before + new_leaderboard_section + after
+        else:
+            # If no markers found, append at the end of the README
+            updated_readme = (
+                readme_contents +
+                "\n\n## Current Model Leaderboard\n" +
+                new_leaderboard_section
+            )
+
+        # Write the updated README file
+        with open(readme_path, 'w', encoding='utf-8') as f:
+            f.write(updated_readme)
+
+        msg = f"README.md successfully updated with the top {top_n} models from {leaderboard_path} at {current_time}."
+        if logger:
+            logger.info(msg)
+        else:
+            print(msg)
+
+    except Exception as e:
+        err_msg = f"Failed to update README leaderboard: {e}"
+        if logger:
+            logger.error(err_msg)
+        else:
+            print(err_msg)

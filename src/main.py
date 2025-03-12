@@ -72,7 +72,8 @@ matplotlib.use('Agg')  # Use the Agg backend for non-interactive plotting
 from championship_evaluator import ChampionshipEvaluator
 from utils import (load_config, load_data, prepare_features, 
                   scale_and_add_constant, get_enabled_model_types, load_model,
-                  fit_and_evaluate_single_model, save_model, save_performance_metrics) # compute_metrics in utils
+                  fit_and_evaluate_single_model, save_model, save_performance_metrics,
+                  update_readme_leaderboard) # compute_metrics in utils
 
 # Run PDP helper - automatically detects model type
 from visualization import PDP_wrapper
@@ -872,6 +873,12 @@ class RacingMLPipeline:
             # )
 
             # self.logger.info("Championship evaluations completed for all fitted models.")
+
+            update_readme_leaderboard(
+                leaderboard_path=os.path.join('models', self.config['output']['leaderboard_csv']),
+                readme_path='README.md',
+                logger=self.logger
+            )
 
 
 if __name__ == "__main__":
