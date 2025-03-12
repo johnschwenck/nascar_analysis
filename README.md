@@ -1,26 +1,45 @@
-## JGR Race Results Analysis and Modeling Project
-
+```
 # ===============================
 # NASCAR Race Results ML Pipeline
 # ===============================
 #
 # Directory Structure:
-# ├── config.yaml
-# ├── README.md
-# ├── requirements.txt
-# ├── src/
-# │   ├── __init__.py
-# │   ├── nascar_model_pipeline.py
-# │   └── utils.py
-# ├── data/
-# │   └── cup_race_results_2014_2024.csv
-# ├── outputs/
-# │   ├── leaderboard.csv
-# │   └── plots/
-# │       └── wins_distribution.png
-# └── notebooks/
-# ===============================
-
+# NASCAR_ANALYSIS/
+# │
+# ├── data/                                                 # Input data files
+# │   ├── aggregated_driver_data.csv                        # Grouped source data by driver by year
+# │   ├── champions_2014_2024.csv                           # Web-sourced driver data (winning driver by year + associated team)
+# │   ├── cup_race_results_2014_2024.csv                    # Source data
+# │   └── team_wins_by_year.csv                             # Web-sourced team data (total team wins by year)
+# │
+# ├── models/                                               # Model outputs (trained models + analysis)
+# │   ├── ols/
+# │   ├── poisson/
+# │   │   └── poisson_20250312_0907/
+# │   │       ├── analysis/                                 # Case Study Questions + Answers
+# |   |            ├── driver_championship_comparison.csv
+# |   |            ├── driver_over_under_performance.csv
+# |   |            ├── team_championship_comparison.csv
+# |   |            ├── team_over_under_performance.csv
+# │   │       ├── plots/                                    # Visualizations
+# │   │       ├── poisson_20250312_0907.pkl
+# │   │       └── predictor_selection.csv
+# │   ├── ...                                               # More model types: gbm, zip, etc. 
+# │   ├── leaderboard.csv                                   # Model Leaderboard
+# │
+# ├── src/                                                  # Source code
+# │   ├── championship_evaluator.py
+# │   ├── logger_config.py
+# │   ├── main.py
+# │   ├── utils.py
+# │   └── visualization.py
+# │
+# ├── .gitignore                                            # For GitHub
+# ├── config.yaml                                           # User-defined config for modeling execution
+# ├── nascar_analysis.ipynb                                 # Jupyter Notebook version for easier workflow
+# ├── README.md                                             # Project instructions & documentation
+# └── requirements.txt                                      # Package dependencies
+```
 ## Background
 
 The list of high-level metrics that JGR typically uses to characterize race outcomes consists of: 
