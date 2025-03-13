@@ -7,27 +7,27 @@ Here's how the workflow moves step-by-step at a high level:
 1. **Configuration Setup (`config.yaml`)**
 
 > ***Function: `load_config()`***
-     Define file paths, model settings and hyperparameters, and analysis settings.
+- Define file paths, model settings and hyperparameters, and analysis settings.
 
 2. **Data Loading**
 
 > ***Function: `load_data()`***
-    - Load NASCAR race results data and championship data based on the configuration YAML file.
+- Load NASCAR race results data and championship data based on the configuration YAML file.
 
 3. **Data Preprocessing**
 
 > Function: `preprocess_data()`
-    - Aggregate and summarize raw race results data to calculate key metrics (wins, finishes, laps led) by driver and season, calculating statistics like total wins, top finishes, laps led, and accidents per driver each year.
+   - Aggregate and summarize raw race results data to calculate key metrics (wins, finishes, laps led) by driver and season, calculating statistics like total wins, top finishes, laps led, and accidents per driver each year.
 
 4. **Feature Selection**
 
 > Function: `select_predictors()`
-    - Dynamically choose variables that effectively predict driver wins, removing redundant or irrelevant data in order to strengthen the signal into the model.
+- Dynamically choose variables that effectively predict driver wins, removing redundant or irrelevant data in order to strengthen the signal into the model.
 
 5. **Data Splitting**
 
 > Function: `data_partitioning()`
-    - Split dataset into training and testing sets, maintaining season-based groupings, to evaluate robustness, over-fitting, and out-of-sample performance.
+- Split dataset into training and testing sets, maintaining season-based groupings, to evaluate robustness, over-fitting, and out-of-sample performance.
 
 6. **Model Training & Evaluation**
 
