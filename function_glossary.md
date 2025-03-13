@@ -31,18 +31,18 @@ Function: `data_partitioning()`
 
 6. **Model Training & Evaluation**
 
-Function: `fit_models()`
+> Function: `fit_models()`
    - Train machine learning models (XGBoost, GBM) as well as statistical models (OLS, Poisson, Negative Binomial, etc) using historical data to predict expected driver wins. It uses the selected variables from step 5, and built with the training data from step 6. After training, the model's performance is evaluated to understand accuracy—how well predictions match actual outcomes.
 
 7. **Performance Metrics & Analysis**
 
-Function: `compute_metrics()`
+> Function: `compute_metrics()`
    - Measure prediction performance using RMSE, MAE, and R² metrics.
    - Calculates how well the model did by comparing predicted wins to actual wins. Key metrics include RMSE (how off predictions are), MAE (average prediction error), and R² (how well the predictions fit the actual results).
 
 8. **Model Saving and Loading**
 
-Function: `save_model()` & `load_model()`
+> Function: `save_model()` & `load_model()`
 Once trained, models are saved for future use. This allows us to revisit previous analyses easily without having to retrain models every time you analyze data.
 
 9. **Visualizations (`visualization.py`)**
