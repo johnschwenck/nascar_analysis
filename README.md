@@ -96,15 +96,15 @@ Used Acronyms:
 - Stewart-Haas Racing (SHR)	
 - Furniture Row Racing (FRR)
 
-*Main Workflow*
-(1)
+For analysis and question answering, refer to *nascar_analysis.ipynb* in the root folder
+
 
 ## Current Model Leaderboard
 
 <!-- LEADERBOARD_START -->
 
 **Leaderboard (Top 9 Models)**  
-_Last updated: 2025-03-12 20:48:46_
+_Last updated: 2025-03-12 22:16:38_
 
 | model_id              | model_type   |     timestamp |   train_RMSE |   test_RMSE |   train_MAE |   test_MAE |   train_R2 |   test_R2 |   CV_RMSE_Mean |   CV_RMSE_Std |   train_test_diff |
 |:----------------------|:-------------|--------------:|-------------:|------------:|------------:|-----------:|-----------:|----------:|---------------:|--------------:|------------------:|

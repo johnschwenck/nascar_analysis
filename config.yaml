@@ -66,7 +66,7 @@ hyperparameters:
 
 model_selection:
   # manual_model_id: gbm_20250311_2138  # e.g., ols_20240315_143500 if manually selecting else null
-  manual_model_id: zip_20250312_1409
+  manual_model_id: poisson_20250312_1409
   # manual_model_id: null
   metric: test_RMSE
   minimize: true
