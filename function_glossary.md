@@ -4,72 +4,56 @@ The purpose of this code is to analyze historical NASCAR race results to predict
 ### Workflow Steps
 Here's how the workflow moves step-by-step at a high level:
 
-1. **Configuration Setup (`config.yaml`):**
-   - Define file paths, model choices, and analysis settings.
+1. **Configuration Setup (`config.yaml`)**
 Function: load_config()
-Reads a settings file (config.yaml) that tells the analysis what data to use, which models to run, and which settings to apply (like how to split data into training and testing sets or which features to analyze).
-Think of this as defining your preferences and options at the start, like choosing your preferences before running an analysis.
+   - Define file paths, model settings and hyperparameters, and analysis settings.
 
 2. **Data Loading**
 Function: `load_data()`
-   - Load NASCAR race results data and championship data based on configurations.
-   - Loads NASCAR race data based on the path given by the configuration. It's like opening a specific dataset to begin your analysis.
+   - Load NASCAR race results data and championship data based on the configuration YAML file.
 
-3. **Data Preprocessing ()**
+3. **Data Preprocessing**
 Function: `preprocess_data()`
-   - Aggregate and summarize raw race data to calculate key metrics (wins, finishes, laps led).
-Function: preprocess_data()
-This step cleans and summarizes the original detailed race results. It organizes the information by driver and season, calculating statistics like total wins, top finishes, laps led, and accidents per driver each year.
-Think of this as creating a summarized report from raw data, making it easier to analyze.
+   - Aggregate and summarize raw race results data to calculate key metrics (wins, finishes, laps led) by driver and season, calculating statistics like total wins, top finishes, laps led, and accidents per driver each year.
 
 4. **Feature Selection**
 Function: `select_predictors()`
-   - Dynamically choose variables that effectively predict driver wins, removing redundant or irrelevant data.
-Function: select_predictors()
-This function picks relevant variables (like average finishing position, number of top-5 finishes, etc.) from your data to use in predictions. It removes unnecessary or confusing variables to ensure clearer, stronger predictions.
+   - Dynamically choose variables that effectively predict driver wins, removing redundant or irrelevant data in order to strengthen the signal into the model.
 
 5. **Data Splitting**
 Function: `data_partitioning()`
-   - Split dataset into training and testing sets, maintaining season-based groupings.
-Function: data_partitioning()
-Data is divided into two groups: one for learning patterns (training) and one for testing how well the model predicts outcomes it hasn't yet seen. Think of this as testing predictions against reality to see how accurate they are.
+   - Split dataset into training and testing sets, maintaining season-based groupings, to evaluate robustness, over-fitting, and out-of-sample performance.
 
-4. **Model Training & Evaluation**
+6. **Model Training & Evaluation**
 Function: `fit_models()`
-   - Train machine learning models (XGBoost, GBM) using historical data.
-   - Evaluate model predictions to measure accuracy and reliability.
+   - Train machine learning models (XGBoost, GBM) as well as statistical models (OLS, Poisson, Negative Binomial, etc) using historical data to predict expected driver wins. It uses the selected variables from step 5, and built with the training data from step 6. After training, the model's performance is evaluated to understand accuracy—how well predictions match actual outcomes.
 
-Trains predictive models (like XGBoost and Gradient Boosting Machines) to learn from historical race results and predict expected driver wins. It uses the selected variables from step 4.
-After training, the model's performance is evaluated to understand accuracy—how well predictions match actual outcomes.
-
-5. **Performance Metrics & Analysis**
+7. **Performance Metrics & Analysis**
 Function: `compute_metrics()`
    - Measure prediction performance using RMSE, MAE, and R² metrics.
    - Calculates how well the model did by comparing predicted wins to actual wins. Key metrics include RMSE (how off predictions are), MAE (average prediction error), and R² (how well the predictions fit the actual results).
 
-6. **Model Saving and Loading**
+8. **Model Saving and Loading**
 Function: `save_model()` & `load_model()`
-Once trained, models are saved for future use. This allows you to revisit previous analyses easily without having to retrain models every time you analyze data.
+Once trained, models are saved for future use. This allows us to revisit previous analyses easily without having to retrain models every time you analyze data.
 
-7. **Visualizations (`visualization.py`)**
+9. **Visualizations (`visualization.py`)**
 Functions: `plot_over_under_performance()`, `plot_feature_distributions()`, `plot_correlation_heatmap()`, `plot_feature_importance()`, `plot_residuals()`
-These functions generate visualizations to understand:
-Which drivers performed above or below expectations.
-How different factors influenced wins.
-Relationships and patterns in the data.
-Think of these visualizations as charts and graphs that clarify performance trends at a glance.
-   - Generate visual insights, such as performance distributions, correlation heatmaps, and feature importance.
-   - Identify drivers and teams that overperformed or underperformed based on predictions.
+   - Generate visual insights, such as performance distributions, correlation heatmaps, and feature importance, to understand which drivers performed above or below expectations, how different factors influenced wins, and any relationships / patterns in the data.
 
-8. **Championship Evaluation (`ChampionshipEvaluator`)**
-   - Compare predicted champions (drivers or teams) against actual champions to assess model effectiveness.
+10. **Championship Evaluation (`ChampionshipEvaluator`)**
 Function: `evaluate_championship_predictions()`
-Checks if the model's predicted "best" driver or team actually won the championship. It summarizes how often predictions match reality, highlighting accuracy and the effectiveness of the predictive models.
+   - Compare predicted champions (drivers or teams) against actual champions to assess model effectiveness.
+   - Checks if the model's predicted "best" driver or team actually won the championship. It summarizes how often predictions match reality, highlighting accuracy and the effectiveness of the predictive models.
 
-9. **Logging and Reporting**
-   - Track and document the entire analysis process for transparency and ease of debugging.
+11. **Logging and Reporting**
 Function: `setup_logger()`
-Provides detailed messages about each step in the process, similar to taking notes throughout the analysis, helping users follow the progress and troubleshoot if necessary.
+   - Track and document the entire analysis process for transparency and ease of debugging.
+
+12. **Running the Entire Workflow**  
+    **Function: `run_pipeline()`**  
+    Orchestrates all steps in a single call—from loading the configuration file to preprocessing data, training models, evaluating performance, generating visualizations, and saving results. This function allows the entire workflow to be executed consistently with just one line of code.
+
 
 ### Stand-alone Utility Functions (Helpers)
 Several helper functions perform important tasks independently, assisting the main functions above:

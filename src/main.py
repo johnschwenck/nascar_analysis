@@ -111,6 +111,12 @@ class RacingMLPipeline:
         self.model_id = None
         self.best_model_id = None
 
+        lb_path = os.path.join('models', 'leaderboard.csv')
+        if os.path.exists( lb_path ):
+            self.model_LB = pd.read_csv(lb_path) # when running manual_model_id, by logic, the leaderboard MUST exist
+        else:
+            self.model_LB = None # will be created via fit_models()
+
         self.manual_model_id = self.config.get('model_selection', {}).get('manual_model_id')
 
         self.logger.info(f"Initialized RacingMLPipeline with config: {config_path}")
@@ -595,10 +601,11 @@ class RacingMLPipeline:
             # )
 
         # Save leaderboard CSV
-        model_LB = save_performance_metrics(performance_results, self.config, logger = self.logger)
+        self.model_LB = save_performance_metrics(performance_results, self.config, logger = self.logger)
 
         self.logger.info("\nAll models have been fitted and evaluated.\n")
-        self.logger.info(f"Current Model Leaderboard:\n{model_LB}")
+        self.logger.info(f"\n\n=============== MODELING LEADERBOARD ===============\n")
+        self.logger.info(f"Current Model Leaderboard:\n{self.model_LB}")
 
     #     ## select top model and assign to self.best_model_id and self.best_model_type
     #     self.select_best_model(performance_results)
@@ -750,7 +757,7 @@ class RacingMLPipeline:
         # 1. Load and preprocess data
         df = load_data(self.config)
 
-        # 3. Load leaderboard file path (if it exists)
+        # 2. Load leaderboard file path (if it exists)
         leaderboard_file = os.path.join('models', self.config['output']['leaderboard_csv'])
 
     
@@ -765,7 +772,7 @@ class RacingMLPipeline:
             self.logger.info(f"model_id found in config file")
             self.logger.info(f"Manual model selection enabled with model_id: {self.manual_model_id}")
 
-            # 4.1(A). Validate the manual_model_id exists in leaderboard
+            # 3.1(A). Validate the manual_model_id exists in leaderboard
             if not os.path.exists(leaderboard_file):
                 raise FileNotFoundError(f"Leaderboard file not found at {leaderboard_file}")
 
@@ -774,17 +781,17 @@ class RacingMLPipeline:
             if self.manual_model_id not in leaderboard_df['model_id'].values:
                 raise ValueError(f"Manual model_id {self.manual_model_id} not found in leaderboard.")
             
-            # 4.1(B). Load the specified model
+            # 3.1(B). Load the specified model
             model = load_model(self.manual_model_id, logger = self.logger)
 
-            # 4.1(C). Save info about selected model type for downstream use
+            # 3.1(C). Save info about selected model type for downstream use
             model_row = leaderboard_df[leaderboard_df['model_id'] == self.manual_model_id].iloc[0]
             self.model_id = self.manual_model_id
             self.model_type = model_row['model_type']
             # self.best_model_type = model_row['model_type']
             self.logger.info(f"Manual model {self.manual_model_id} of type {self.model_type} loaded successfully.")
             
-            # 4.1(D) Check for preprocessed data in model folder
+            # 3.1(D) Check for preprocessed data in model folder
             metrics_df_path = os.path.join('data', 'aggregated_driver_data.csv')
             if os.path.exists(metrics_df_path):
                 self.logger.info(f"Loading processed data from {metrics_df_path}")
@@ -803,10 +810,10 @@ class RacingMLPipeline:
             # Generate predictors from the processed metrics_df.
             predictors = self.select_predictors(metrics_df, self.model_type)
 
-            # 4.1(E). Run predictions with the loaded model
+            # 3.1(E). Run predictions with the loaded model
             manual_model_results = self.generate_predictions(metrics_df, predictors=predictors, model=model)
 
-            # 4.1(F). Championship Evaluation for manual model
+            # 3.1(F). Championship Evaluation for manual model
             from src.championship_evaluator import ChampionshipEvaluator
             evaluator = ChampionshipEvaluator(self.config, logger=self.logger)
             
@@ -827,12 +834,14 @@ class RacingMLPipeline:
             )
 
             self.logger.info("Championship evaluations completed for manual model.")
+            self.logger.info(f"\n\n=============== MODELING LEADERBOARD ===============\n")
+            self.logger.info(f"Current Model Leaderboard:\n{self.model_LB}")
 
         else:
 
             # Run modeling process
 
-            # 4.2(A) Process or load Data    
+            # 3.2(A) Process or load Data    
             aggregated_data_path = os.path.join('data', 'aggregated_driver_data.csv')
 
             if not self.config['generate_grouped_data'] and not os.path.exists(aggregated_data_path):
@@ -849,7 +858,7 @@ class RacingMLPipeline:
             self.logger.info('Driver-Aggregated Data (first 5 rows):')
             self.logger.info(metrics_df.head().to_string(index=False))
 
-            # # 4.2(B). Determine which models to run
+            # # 3.2(B). Determine which models to run
             # model_types = get_enabled_model_types(self.config)
             # self.logger.info(f"Model types to run: {model_types}")
             
@@ -860,7 +869,7 @@ class RacingMLPipeline:
             # else:
             #     self.logger.info("Cross-validation disabled")
 
-            # 4.2(B) Run the model fitting process
+            # 3.2(B) Run the model fitting process
             self.fit_models(metrics_df)
 
             # # Championship Evaluation
@@ -889,6 +898,7 @@ class RacingMLPipeline:
 
             # self.logger.info("Championship evaluations completed for all fitted models.")
 
+        # 4. Update Leaderboard
         update_readme_leaderboard(
             leaderboard_path=os.path.join('models', self.config['output']['leaderboard_csv']),
             readme_path='README.md',

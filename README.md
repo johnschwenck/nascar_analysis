@@ -104,7 +104,7 @@ Used Acronyms:
 <!-- LEADERBOARD_START -->
 
 **Leaderboard (Top 9 Models)**  
-_Last updated: 2025-03-12 17:52:25_
+_Last updated: 2025-03-12 20:48:46_
 
 | model_id              | model_type   |     timestamp |   train_RMSE |   test_RMSE |   train_MAE |   test_MAE |   train_R2 |   test_R2 |   CV_RMSE_Mean |   CV_RMSE_Std |   train_test_diff |
 |:----------------------|:-------------|--------------:|-------------:|------------:|------------:|-----------:|-----------:|----------:|---------------:|--------------:|------------------:|
