@@ -6,27 +6,27 @@ Here's how the workflow moves step-by-step at a high level:
 
 1. **Configuration Setup (`config.yaml`)**
 
-Function: load_config()
-   - Define file paths, model settings and hyperparameters, and analysis settings.
+> Function: load_config()
+    - Define file paths, model settings and hyperparameters, and analysis settings.
 
 2. **Data Loading**
 
-Function: `load_data()`
-   - Load NASCAR race results data and championship data based on the configuration YAML file.
+> Function: `load_data()`
+        - Load NASCAR race results data and championship data based on the configuration YAML file.
 
 3. **Data Preprocessing**
 
-Function: `preprocess_data()`
-   - Aggregate and summarize raw race results data to calculate key metrics (wins, finishes, laps led) by driver and season, calculating statistics like total wins, top finishes, laps led, and accidents per driver each year.
+> Function: `preprocess_data()`
+    - Aggregate and summarize raw race results data to calculate key metrics (wins, finishes, laps led) by driver and season, calculating statistics like total wins, top finishes, laps led, and accidents per driver each year.
 
 4. **Feature Selection**
 
-Function: `select_predictors()`
+> Function: `select_predictors()`
    - Dynamically choose variables that effectively predict driver wins, removing redundant or irrelevant data in order to strengthen the signal into the model.
 
 5. **Data Splitting**
 
-Function: `data_partitioning()`
+> Function: `data_partitioning()`
    - Split dataset into training and testing sets, maintaining season-based groupings, to evaluate robustness, over-fitting, and out-of-sample performance.
 
 6. **Model Training & Evaluation**
@@ -47,12 +47,12 @@ Once trained, models are saved for future use. This allows us to revisit previou
 
 9. **Visualizations (`visualization.py`)**
 
-Functions: `plot_over_under_performance()`, `plot_feature_distributions()`, `plot_correlation_heatmap()`, `plot_feature_importance()`, `plot_residuals()`
+> Functions: `plot_over_under_performance()`, `plot_feature_distributions()`, `plot_correlation_heatmap()`, `plot_feature_importance()`, `plot_residuals()`
    - Generate visual insights, such as performance distributions, correlation heatmaps, and feature importance, to understand which drivers performed above or below expectations, how different factors influenced wins, and any relationships / patterns in the data.
 
 10. **Championship Evaluation (`ChampionshipEvaluator`)**
 
-Function: `evaluate_championship_predictions()`
+> Function: `evaluate_championship_predictions()`
    - Compare predicted champions (drivers or teams) against actual champions to assess model effectiveness.
    - Checks if the model's predicted "best" driver or team actually won the championship. It summarizes how often predictions match reality, highlighting accuracy and the effectiveness of the predictive models.
 
