@@ -6,13 +6,13 @@ Here's how the workflow moves step-by-step at a high level:
 
 1. **Configuration Setup (`config.yaml`)**
 
-> Function: load_config()
-    - Define file paths, model settings and hyperparameters, and analysis settings.
+> ***Function: `load_config()`***
+     Define file paths, model settings and hyperparameters, and analysis settings.
 
 2. **Data Loading**
 
-> Function: `load_data()`
-        - Load NASCAR race results data and championship data based on the configuration YAML file.
+> ***Function: `load_data()`***
+    - Load NASCAR race results data and championship data based on the configuration YAML file.
 
 3. **Data Preprocessing**
 
@@ -22,17 +22,17 @@ Here's how the workflow moves step-by-step at a high level:
 4. **Feature Selection**
 
 > Function: `select_predictors()`
-   - Dynamically choose variables that effectively predict driver wins, removing redundant or irrelevant data in order to strengthen the signal into the model.
+    - Dynamically choose variables that effectively predict driver wins, removing redundant or irrelevant data in order to strengthen the signal into the model.
 
 5. **Data Splitting**
 
 > Function: `data_partitioning()`
-   - Split dataset into training and testing sets, maintaining season-based groupings, to evaluate robustness, over-fitting, and out-of-sample performance.
+    - Split dataset into training and testing sets, maintaining season-based groupings, to evaluate robustness, over-fitting, and out-of-sample performance.
 
 6. **Model Training & Evaluation**
 
 > Function: `fit_models()`
-   - Train machine learning models (XGBoost, GBM) as well as statistical models (OLS, Poisson, Negative Binomial, etc) using historical data to predict expected driver wins. It uses the selected variables from step 5, and built with the training data from step 6. After training, the model's performance is evaluated to understand accuracy—how well predictions match actual outcomes.
+- Train machine learning models (XGBoost, GBM) as well as statistical models (OLS, Poisson, Negative Binomial, etc) using historical data to predict expected driver wins. It uses the selected variables from step 5, and built with the training data from step 6. After training, the model's performance is evaluated to understand accuracy—how well predictions match actual outcomes.
 
 7. **Performance Metrics & Analysis**
 
@@ -43,7 +43,7 @@ Here's how the workflow moves step-by-step at a high level:
 8. **Model Saving and Loading**
 
 > Function: `save_model()` & `load_model()`
-Once trained, models are saved for future use. This allows us to revisit previous analyses easily without having to retrain models every time you analyze data.
+    - Once trained, models are saved for future use. This allows us to revisit previous analyses easily without having to retrain models every time you analyze data.
 
 9. **Visualizations (`visualization.py`)**
 
@@ -63,7 +63,7 @@ Function: `setup_logger()`
 
 12. **Running the Entire Workflow**  
 
-   **Function: `run_pipeline()`**  
+   > **Function: `run_pipeline()`**  
    - Orchestrates all steps in a single call—from loading the configuration file to preprocessing data, training models, evaluating performance, generating visualizations, and saving results. This function allows the entire workflow to be executed consistently with just one line of code.
 
 
