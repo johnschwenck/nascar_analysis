@@ -6,7 +6,7 @@ Here's how the workflow moves step-by-step at a high level:
 
 1. **Configuration Setup (`config.yaml`)**
 
-> ***Function: `load_config()`***
+> *Function: **`load_config()`***
 - Define file paths, model settings and hyperparameters, and analysis settings.
 
 2. **Data Loading**
