@@ -11,7 +11,7 @@ Here's how the workflow moves step-by-step at a high level:
 
 2. **Data Loading**
 
-> ***Function: ***`load_data()`***
+> Function: ***`load_data()`***
 - Load NASCAR race results data and championship data based on the configuration YAML file.
 
 3. **Data Preprocessing**
@@ -47,7 +47,7 @@ Here's how the workflow moves step-by-step at a high level:
 
 9. **Visualizations (`visualization.py`)**
 
-> Functions: `plot_over_under_performance()`, `plot_feature_distributions()`, `plot_correlation_heatmap()`, `plot_feature_importance()`, `plot_residuals()`
+> Functions: ***`plot_over_under_performance()`***, ***`plot_feature_distributions()`***, ***`plot_correlation_heatmap()`***, ***`plot_feature_importance()`***, ***`plot_residuals()`***
    - Generate visual insights, such as performance distributions, correlation heatmaps, and feature importance, to understand which drivers performed above or below expectations, how different factors influenced wins, and any relationships / patterns in the data.
 
 10. **Championship Evaluation (`ChampionshipEvaluator`)**
